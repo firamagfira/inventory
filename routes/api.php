@@ -3,19 +3,18 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
 
-
-Route::get('/tugas-praktikum', function () {
+Route::get('/identitas', function () {
     return response()->json([
-        'status'       => 'Berhasil',
-        'nama'         => 'Maghfirah', 
-        'nim'          => '60200124112',  
-        'mata_kuliah'  => 'Praktikum Web 2',
-        'keterangan'   => 'Tugas API Laravel Berhasil dijalankan'
-    ]);
+        'status' => 'success',
+        'message' => 'Data Mahasiswa Berhasil Diambil',
+        'data' => [
+            'nama' => 'Maghfirah',
+            'nim'  => '60200124112',
+            'kelas' => 'Teknik informatika',
+            'tugas' => 'Praktikum Web Service - Nomor 3'
+        ]
+    ], 200);
 });
 
 
