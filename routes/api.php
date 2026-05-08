@@ -1,20 +1,11 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ItemController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/identitas', function () {
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Data Mahasiswa Berhasil Diambil',
-        'data' => [
-            'nama' => 'Maghfirah',
-            'nim'  => '60200124112',
-            'kelas' => 'Teknik informatika',
-            'tugas' => 'Praktikum Web Service - Nomor 3'
-        ]
-    ], 200);
-});
+Route::apiResource('categories', CategoryController::class);
+Route::apiResource('items', ItemController::class);
 
 
