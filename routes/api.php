@@ -1,11 +1,8 @@
 <?php
 
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\ItemController;
+use App\Http\Controllers\RoomTypeController;
+use App\Http\Controllers\HotelRoomController; 
 use Illuminate\Support\Facades\Route;
 
-
-Route::apiResource('categories', CategoryController::class);
-Route::apiResource('items', ItemController::class);
-
-
+Route::apiResource('room-types', RoomTypeController::class);
+Route::apiResource('hotel-rooms', HotelRoomController::class); 
