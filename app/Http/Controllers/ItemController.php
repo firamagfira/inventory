@@ -2,32 +2,32 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Item;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreItemRequest;
+use App\Services\ItemService;
+use Illuminate\Http\JsonResponse;
 
 class ItemController extends Controller
 {
-    public function index() {
-        // Kita pakai 'with' supaya data kategorinya ikut muncul
-        return response()->json(Item::with('category')->get());
+    protected $svc;
+
+    public function __construct(ItemService $service)
+    {
+        $this->svc = $service;
     }
 
-    public function store(Request $request) {
-        $item = Item::create($request->all());
-        return response()->json($item, 201);
+    public function index(): JsonResponse
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => $this->svc->all()
+        ]);
     }
 
-    public function show(Item $item) {
-        return response()->json($item->load('category'));
-    }
-
-    public function update(Request $request, Item $item) {
-        $item->update($request->all());
-        return response()->json($item);
-    }
-
-    public function destroy(Item $item) {
-        $item->delete();
-        return response()->json(['message' => 'Item deleted']);
+    public function store(StoreItemRequest $request): JsonResponse
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => $this->svc->create($request->validated())
+        ], 201);
     }
 }
