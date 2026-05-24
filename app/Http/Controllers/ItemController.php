@@ -3,31 +3,76 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreItemRequest;
+use App\Http\Requests\UpdateItemRequest;
+use App\Http\Controllers\Controller;
 use App\Services\ItemService;
 use Illuminate\Http\JsonResponse;
+use Exception;
 
 class ItemController extends Controller
 {
-    protected $svc;
+    protected ItemService $svc;
 
-    public function __construct(ItemService $service)
+    // Inject ItemService melalui Constructor
+    public function __construct(ItemService $svc)
     {
-        $this->svc = $service;
+        $this->svc = $svc;
     }
 
     public function index(): JsonResponse
     {
         return response()->json([
             'status' => 'success',
-            'data' => $this->svc->all()
+            'data' => $this->svc->all(),
+            'message' => 'Berhasil menarik semua data Item'
         ]);
     }
 
-    public function store(StoreItemRequest $request): JsonResponse
+    public function store(StoreItemRequest $req): JsonResponse
     {
+        $item = $this->svc->create($req->validated());
         return response()->json([
             'status' => 'success',
-            'data' => $this->svc->create($request->validated())
+            'data' => $item,
+            'message' => 'Item berhasil dibuat'
         ], 201);
+    }
+
+    public function show($id): JsonResponse
+    {
+        try {
+            $item = $this->svc->find($id);
+            return response()->json([
+                'status' => 'success',
+                'data' => $item,
+                'message' => 'Berhasil menarik satu data Item'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'data' => null,
+                'message' => $e->getMessage()
+            ], 404);
+        }
+    }
+
+    public function update(UpdateItemRequest $req, $id): JsonResponse
+    {
+        $item = $this->svc->update($id, $req->validated());
+        return response()->json([
+            'status' => 'success',
+            'data' => $item,
+            'message' => 'Item berhasil diperbarui'
+        ]);
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $this->svc->delete($id);
+        return response()->json([
+            'status' => 'success',
+            'data' => null,
+            'message' => 'Item berhasil dihapus'
+        ]);
     }
 }

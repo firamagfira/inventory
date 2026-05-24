@@ -23,9 +23,6 @@ class StoreItemRequest extends FormRequest
         ];
     }
 
-    /**
-     * Trik Modul: Gagalkan validasi dan langsung kirim JSON error ke Postman
-     */
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(response()->json([
