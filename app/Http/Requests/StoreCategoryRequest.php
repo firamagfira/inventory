@@ -18,3 +18,8 @@ class StoreCategoryRequest extends FormRequest
         ];
     }
 }
+    protected function prepareForValidation() { 
+        $input = $this->all();
+
+        array_walk $input, function
+    }
