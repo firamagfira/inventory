@@ -6,11 +6,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\HasApiTokens; // <-- 1. Memanggil Trait HasApiTokens milik Sanctum
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable; // <-- 2. Menggunakan Trait HasApiTokens di dalam Class
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role', // <-- 3. Menambahkan kolom 'role' ke dalam $fillable agar bisa diisi massal
     ];
 
     /**
@@ -34,9 +35,9 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array<string, string>
+     * @return array<string, string>
      */
     protected $casts = [
         'email_verified_at' => 'datetime',

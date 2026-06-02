@@ -2,77 +2,64 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreItemRequest;
-use App\Http\Requests\UpdateItemRequest;
-use App\Http\Controllers\Controller;
-use App\Services\ItemService;
-use Illuminate\Http\JsonResponse;
-use Exception;
+use App\Models\Item;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Api\BaseController; // Hubungkan ke BaseController
 
-class ItemController extends Controller
+class ItemController extends BaseController // Ubah extend ke BaseController
 {
-    protected ItemService $svc;
-
-    // Inject ItemService melalui Constructor
-    public function __construct(ItemService $svc)
+    // 1. Ambil Semua Data Barang (Untuk Soal 6c)
+    public function index()
     {
-        $this->svc = $svc;
+        $items = Item::all();
+        return $this->success($items, 'Items retrieved successfully.');
     }
 
-    public function index(): JsonResponse
+    // 2. Tambah Barang Baru
+    public function store(Request $request)
     {
-        return response()->json([
-            'status' => 'success',
-            'data' => $this->svc->all(),
-            'message' => 'Berhasil menarik semua data Item'
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|integer',
+            'price' => 'required|numeric',
+            'stock' => 'required|integer',
         ]);
-    }
 
-    public function store(StoreItemRequest $req): JsonResponse
-    {
-        $item = $this->svc->create($req->validated());
-        return response()->json([
-            'status' => 'success',
-            'data' => $item,
-            'message' => 'Item berhasil dibuat'
-        ], 201);
-    }
-
-    public function show($id): JsonResponse
-    {
-        try {
-            $item = $this->svc->find($id);
-            return response()->json([
-                'status' => 'success',
-                'data' => $item,
-                'message' => 'Berhasil menarik satu data Item'
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'data' => null,
-                'message' => $e->getMessage()
-            ], 404);
+        if ($validator->fails()) {
+            return $this->error($validator->errors()->first(), 400);
         }
+
+        $item = Item::create($request->all());
+        return $this->success($item, 'Item created successfully.', 201);
     }
 
-    public function update(UpdateItemRequest $req, $id): JsonResponse
+    // 3. Update Data Barang
+    public function update(Request $request, $id)
     {
-        $item = $this->svc->update($id, $req->validated());
-        return response()->json([
-            'status' => 'success',
-            'data' => $item,
-            'message' => 'Item berhasil diperbarui'
-        ]);
+        $item = Item::find($id);
+        if (!$item) {
+            return $this->error('Item not found.', 404);
+        }
+
+        $item->update($request->all());
+        return $this->success($item, 'Item updated successfully.');
     }
 
-    public function destroy($id): JsonResponse
+    // 4. Hapus Barang (Untuk Soal 6d & 6e - Proteksi Middleware Admin)
+    public function destroy($id)
     {
-        $this->svc->delete($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => null,
-            'message' => 'Item berhasil dihapus'
-        ]);
+        // Cek dulu apakah user yang login rolenya admin (Sesuai Soal 6d & 6e)
+        if (auth()->user()->role !== 'admin') {
+            return $this->error('Forbidden. Hanya admin yang boleh menghapus data!', 403);
+        }
+
+        $item = Item::find($id);
+        if (!$item) {
+            return $this->error('Item not found.', 404);
+        }
+
+        $item->delete();
+        return $this->success(null, 'Item deleted successfully.');
     }
 }
