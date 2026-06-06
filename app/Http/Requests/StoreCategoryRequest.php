@@ -6,20 +6,22 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCategoryRequest extends FormRequest
 {
-    public function authorize(): bool
+    public function authorize()
     {
-        return true; // Pastikan ini true agar tidak forbidden
+        return true;
     }
 
-    public function rules(): array
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'name' => is_string($this->name) ? trim(strip_tags($this->name)) : $this->name,
+        ]);
+    }
+
+    public function rules()
     {
         return [
-            'name' => 'required|string|max:255|unique:categories,name', // Nama kategori wajib diisi dan tidak boleh kembar
+            'name' => 'required|string|max:255|unique:categories,name',
         ];
     }
 }
-    protected function prepareForValidation() { 
-        $input = $this->all();
-
-        array_walk $input, function
-    }

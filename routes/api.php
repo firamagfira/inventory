@@ -1,29 +1,32 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 
-// Route Publik (Bisa diakses tanpa login/token)
-Route::post('register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
+/*
+|--------------------------------------------------------------------------
+| API Routes - Modul 5 (Versioning v1)
+|--------------------------------------------------------------------------
+*/
 
-// Route Terproteksi (Wajib membawa Token Sanctum)
-Route::middleware('auth:sanctum')->group(function () {
-    
-    // Mengambil data user yang sedang aktif login
-    Route::get('/user', function (Request $request) {
-        return $request->user();
+Route::prefix('v1')->group(function () {
+
+    // 1. Route Auth (Dapat diakses secara publik tanpa token)
+    Route::post('register', 'App\Http\Controllers\AuthController@register');
+    Route::post('login', 'App\Http\Controllers\AuthController@login');
+
+    // 2. Route yang membutuhkan Token Autentikasi (Sanctum Middleware)
+    Route::middleware('auth:sanctum')->group(function () {
+
+        // Route untuk Categories (Resource tanpa Destroy)
+        Route::apiResource('categories', 'App\Http\Controllers\CategoryController')->except(['destroy']);
+        
+        // Route khusus untuk Delete Category (Hanya boleh diakses oleh Admin)
+        Route::delete('categories/{category}', 'App\Http\Controllers\CategoryController@destroy')->middleware('role:admin');
+
+        // Route untuk Items (Resource tanpa Destroy)
+        Route::apiResource('items', 'App\Http\Controllers\ItemController')->except(['destroy']);
+        
+        // Route khusus untuk Delete Item (Hanya boleh diakses oleh Admin)
+        Route::delete('items/{item}', 'App\Http\Controllers\ItemController@destroy')->middleware('role:admin');
     });
-
-    // Jalur resource categories (fungsi destroy/hapus dikecualikan)
-    Route::apiResource('categories', 'App\Http\Controllers\CategoryController')->except(['destroy']);
-    // Khusus jalur DELETE categories ini dikunci pakai tameng role:admin
-    Route::delete('categories/{category}', 'App\Http\Controllers\CategoryController@destroy')->middleware('role:admin');
-
-    // Jalur resource items (fungsi destroy/hapus dikecualikan)
-    Route::apiResource('items', 'App\Http\Controllers\ItemController')->except(['destroy']);
-    // Khusus jalur DELETE items ini dikunci pakai tameng role:admin
-    Route::delete('items/{item}', 'App\Http\Controllers\ItemController@destroy')->middleware('role:admin');
-    
 });

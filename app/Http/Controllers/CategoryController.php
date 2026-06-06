@@ -5,48 +5,57 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Services\CategoryService;
-use App\Http\Controllers\Api\BaseController; 
+use App\Http\Controllers\Api\BaseController;
 use Exception;
 
-class CategoryController extends BaseController 
+class CategoryController extends BaseController
 {
-    protected $svc;
+    protected $categoryService;
 
-    public function __construct(CategoryService $svc)
+    public function __construct(CategoryService $categoryService)
     {
-        $this->svc = $svc;
+        $this->categoryService = $categoryService;
     }
 
     public function index()
     {
-        return $this->success($this->svc->all(), "Data berhasil ditampilkan");
+        $categories = $this->categoryService->all();
+        return $this->success($categories, "Daftar kategori berhasil ditampilkan.");
     }
 
-    public function store(StoreCategoryRequest $req)
+    public function store(StoreCategoryRequest $request)
     {
-        $cat = $this->svc->create($req->validated());
-        return $this->success($cat, "Kategori dibuat", 201);
+        $category = $this->categoryService->create($request->validated());
+        return $this->success($category, "Kategori berhasil dibuat.", 201);
     }
 
     public function show($id)
     {
         try {
-            $cat = $this->svc->find($id);
-            return $this->success($cat, "Data berhasil ditampilkan");
+            $category = $this->categoryService->find($id);
+            return $this->success($category, "Detail kategori berhasil ditampilkan.");
         } catch (Exception $e) {
-            return $this->error($e->getMessage(), 404);
+            return $this->error("Kategori tidak ditemukan.", 404);
         }
     }
 
-    public function update(UpdateCategoryRequest $req, $id)
+    public function update(UpdateCategoryRequest $request, $id)
     {
-        $cat = $this->svc->update($id, $req->validated());
-        return $this->success($cat, "Kategori diperbarui");
+        try {
+            $category = $this->categoryService->update($id, $request->validated());
+            return $this->success($category, "Kategori berhasil diperbarui.");
+        } catch (Exception $e) {
+            return $this->error("Gagal memperbarui kategori. Data tidak ditemukan.", 404);
+        }
     }
 
     public function destroy($id)
     {
-        $this->svc->delete($id);
-        return $this->success(null, "Kategori dihapus", 204);
+        try {
+            $this->categoryService->delete($id);
+            return $this->success(null, "Kategori berhasil dihapus.", 200);
+        } catch (Exception $e) {
+            return $this->error("Gagal menghapus kategori. Data tidak ditemukan.", 404);
+        }
     }
 }

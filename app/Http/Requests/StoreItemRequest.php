@@ -3,32 +3,28 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreItemRequest extends FormRequest
 {
-    public function authorize(): bool
+    public function authorize()
     {
-        return true; // Pastikan ini TRUE
+        return true;
     }
 
-    public function rules(): array
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'name' => is_string($this->name) ? trim(strip_tags($this->name)) : $this->name,
+        ]);
+    }
+
+    public function rules()
     {
         return [
             'name' => 'required|string|max:255',
-            'quantity' => 'required|integer|min:0', // Mengunci minimal angka 0
+            'quantity' => 'required|integer|min:0',
             'price' => 'required|numeric|min:0',
             'category_id' => 'required|exists:categories,id',
         ];
-    }
-
-    protected function failedValidation(Validator $validator)
-    {
-        throw new HttpResponseException(response()->json([
-            'status' => 'error',
-            'data' => null,
-            'message' => $validator->errors()->first() // Mengambil pesan error quantity minimal 0
-        ], 420)); 
     }
 }
