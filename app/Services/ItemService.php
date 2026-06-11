@@ -1,30 +1,22 @@
 <?php
 
-namespace App\Services;
+namespace App\Models;
 
-use App\Models\Item;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class ItemService {
-    public function all(): Collection {
-        return Item::with('category')->get();
-    }
+class Item extends Model
+{
+    use HasFactory;
 
-    public function find(int $id): Item {
-        return Item::with('category')->findOrFail($id);
-    }
+    // Tuliskan nama tabelmu (biasanya jamak/plural otomatis dari Laravel)
+    protected $table = 'items'; 
 
-    public function create(array $data): Item {
-        return Item::create($data);
-    }
-
-    public function update(int $id, array $data): Item {
-        $item = Item::findOrFail($id);
-        $item->update($data);
-        return $item;
-    }
-
-    public function delete(int $id): void {
-        Item::destroy($id);
-    }
+    // WAJIB ADA: Daftarkan kolom apa saja yang boleh diisi di database
+   protected $fillable = [
+    'name',
+    'quantity',
+    'price',
+    'category_id' // <-- Tambahkan baris ini!
+];
 }

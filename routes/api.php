@@ -1,32 +1,32 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController; // Bersih tanpa v1
+use App\Http\Controllers\Api\ItemController; // Bersih tanpa v1
 
 /*
 |--------------------------------------------------------------------------
-| API Routes - Modul 5 (Versioning v1)
+| API Routes (Tanpa Folder v1)
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('v1')->group(function () {
+// Rute Publik langsung tanpa bungkus prefix v1
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
-    // 1. Route Auth (Dapat diakses secara publik tanpa token)
-    Route::post('register', 'App\Http\Controllers\AuthController@register');
-    Route::post('login', 'App\Http\Controllers\AuthController@login');
-
-    // 2. Route yang membutuhkan Token Autentikasi (Sanctum Middleware)
-    Route::middleware('auth:sanctum')->group(function () {
-
-        // Route untuk Categories (Resource tanpa Destroy)
-        Route::apiResource('categories', 'App\Http\Controllers\CategoryController')->except(['destroy']);
-        
-        // Route khusus untuk Delete Category (Hanya boleh diakses oleh Admin)
-        Route::delete('categories/{category}', 'App\Http\Controllers\CategoryController@destroy')->middleware('role:admin');
-
-        // Route untuk Items (Resource tanpa Destroy)
-        Route::apiResource('items', 'App\Http\Controllers\ItemController')->except(['destroy']);
-        
-        // Route khusus untuk Delete Item (Hanya boleh diakses oleh Admin)
-        Route::delete('items/{item}', 'App\Http\Controllers\ItemController@destroy')->middleware('role:admin');
-    });
+// Rute Terproteksi token untuk barang/items
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/items', [ItemController::class, 'index']);       // Tampilkan Semua Data
+    Route::post('/items', [ItemController::class, 'store']);      // Tambah Data (Tugas 1)
+    Route::put('/items/{id}', [ItemController::class, 'update']);  // Ubah Data (Tugas 1 - PUT)
+    Route::delete('/items/{id}', [ItemController::class, 'destroy']); // Hapus Data (Tugas 2 - Khusus Admin)
 });
+
+// Pengaman otomatis jika lupa bawa token di Postman
+Route::get('/login', function () {
+    return response()->json([
+        'success' => false,
+        'message' => 'Unauthenticated. Silakan login dulu di POST /api/login untuk mengambil token.'
+    ], 401);
+})->name('login');

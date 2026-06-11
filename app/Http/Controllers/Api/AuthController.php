@@ -1,16 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\Api\v1;
+namespace App\Http\Controllers\Api; // Pastikan bersih tanpa v1
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\User; // <-- Setan utamanya biasanya di sini, baris ini wajib ada!
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    // Fungsi Register Akun Baru (Wajib menyertakan role: admin atau user)
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -24,6 +23,7 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
+        // Proses simpan ke database
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -39,32 +39,5 @@ class AuthController extends Controller
             'token' => $token,
             'role_pilihan' => $user->role
         ], 201);
-    }
-
-    // Fungsi Login untuk mendapatkan Token Akses
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email atau password salah.'
-            ], 401);
-        }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Login Berhasil!',
-            'token' => $token,
-            'role_anda' => $user->role
-        ], 200);
     }
 }
