@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+ feature/testing-debug-security
 use Illuminate\Support\Facades\Log;
 
 Route::prefix('v1')->middleware([
@@ -38,4 +39,10 @@ Route::prefix('v1')->middleware([
         return response()->json(['status' => 'success', 'data' => [], 'message' => 'Success'], 200);
     });
 
+use App\Http\Controllers\ItemController;
+
+// Dibuat versi v1 polosan tanpa middleware biar Postman lancar jaya
+Route::prefix('v1')->group(function () {
+    Route::apiResource('items', ItemController::class);
+ main
 });
