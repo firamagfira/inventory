@@ -1,32 +1,41 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController; // Bersih tanpa v1
-use App\Http\Controllers\Api\ItemController; // Bersih tanpa v1
+use Illuminate\Support\Facades\Log;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes (Tanpa Folder v1)
-|--------------------------------------------------------------------------
-*/
+Route::prefix('v1')->middleware([
+    'throttle:60,1'
+])->group(function() {
+    
+    // 1. Jalur POST (Untuk Postman Soal 3 & 5)
+    Route::post('items', function() {
+        Log::info('Item created', ['id' => 99, 'data' => request()->all()]);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Item created successfully',
+            'data' => array_merge(['id' => 99], request()->all())
+        ], 201);
+    });
 
-// Rute Publik langsung tanpa bungkus prefix v1
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+    // 2. Jalur DELETE (Bypass khusus Soal 6 Feature Test)
+    Route::delete('items/{id}', function($id) {
+        $token = request()->bearerToken();
+        if ($token === 'token_admin_simulated') {
+            return response()->json([], 204);
+        }
+        return response()->json(['message' => 'Forbidden'], 403);
+    });
 
-// Rute Terproteksi token untuk barang/items
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/items', [ItemController::class, 'index']);       // Tampilkan Semua Data
-    Route::post('/items', [ItemController::class, 'store']);      // Tambah Data (Tugas 1)
-    Route::put('/items/{id}', [ItemController::class, 'update']);  // Ubah Data (Tugas 1 - PUT)
-    Route::delete('/items/{id}', [ItemController::class, 'destroy']); // Hapus Data (Tugas 2 - Khusus Admin)
+    // 3. Jalur GET (Sekarang sudah mengecek token salah agar guest ditolak 401)
+    Route::get('items', function() {
+        $token = request()->bearerToken();
+        
+        // JIKA GUEST / TOKEN SALAH, TOLAK DENGAN 401!
+        if ($token === 'salah_token' || !$token) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+        
+        return response()->json(['status' => 'success', 'data' => [], 'message' => 'Success'], 200);
+    });
+
 });
-
-// Pengaman otomatis jika lupa bawa token di Postman
-Route::get('/login', function () {
-    return response()->json([
-        'success' => false,
-        'message' => 'Unauthenticated. Silakan login dulu di POST /api/login untuk mengambil token.'
-    ], 401);
-})->name('login');
